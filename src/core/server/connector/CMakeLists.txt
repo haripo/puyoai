@@ -7,8 +7,9 @@ else()
 endif()
 
 add_library(puyoai_core_server_connector
+            ${pipe_connector_os_cc}
             connector.cc
             connector_manager.cc
             human_connector.cc
             pipe_connector.cc
-            ${pipe_connector_os_cc})
+            socket_connector.cc)

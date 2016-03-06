@@ -19,8 +19,8 @@ public:
     TCPServerSocket make_tcp_server_socket();
 
     // Returns UnixDomainSocket. If failed, socket will be invalid.
-    UnixDomainClientSocket make_unix_domain_client_socket();
-    UnixDomainServerSocket make_unix_domain_server_socket();
+    UnixDomainClientSocket makeUnixDomainClientSocket();
+    UnixDomainServerSocket makeUnixDomainServerSocket();
 
 private:
     SocketFactory() {}

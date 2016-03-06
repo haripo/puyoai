@@ -24,6 +24,7 @@ public:
 
     ssize_t write(const void* buf, size_t size);
     bool writeExactly(const void* buf, size_t size);
+    void flush();
 
 protected:
     explicit Socket(SocketDescriptor sd) : sd_(sd) {}

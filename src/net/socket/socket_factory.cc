@@ -34,7 +34,7 @@ TCPServerSocket SocketFactory::make_tcp_server_socket()
     return TCPServerSocket(sock);
 }
 
-UnixDomainClientSocket SocketFactory::make_unix_domain_client_socket()
+UnixDomainClientSocket SocketFactory::makeUnixDomainClientSocket()
 {
     int sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
@@ -45,7 +45,7 @@ UnixDomainClientSocket SocketFactory::make_unix_domain_client_socket()
     return UnixDomainClientSocket(sock);
 }
 
-UnixDomainServerSocket SocketFactory::make_unix_domain_server_socket()
+UnixDomainServerSocket SocketFactory::makeUnixDomainServerSocket()
 {
     int sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
