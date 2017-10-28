@@ -8,6 +8,7 @@ add_library(puyoai_capture
             analyzer.cc
             analyzer_result_drawer.cc
             capture.cc
+            capture_saver.cc
             color.cc
             images_source.cc
             movie_source.cc
@@ -67,6 +68,7 @@ capture_add_executable(parse_box)
 # Disabled.
 #capture_add_executable(parse_imgs)
 capture_add_executable(parse_movie)
+capture_add_executable(parse_movie_to_puyofu)
 if(LIB_USB)
     capture_add_executable(parse_capture)
 endif()

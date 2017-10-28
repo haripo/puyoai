@@ -145,6 +145,26 @@ string PlayerAnalyzerResult::toString() const
     return ss.str();
 }
 
+string PlayerAnalyzerResult::toLine() const
+{
+    stringstream ss;
+
+    ss << static_cast<int>(nextPuyoState) << " ";
+    ss << userEvent.toString() << " ";
+
+    for (int y = 12; y >= 1; --y) {
+        for (int x = 1; x <= 6; ++x) {
+            ss << toChar(adjustedField.field.get(x, y), !adjustedField.vanishing.get(x, y));
+        }
+    }
+
+    ss << " ";
+    for (int i = 0; i < NUM_NEXT_PUYO_POSITION; ++i) {
+        ss << toChar(adjustedField.nextPuyos[i], true, '.');
+    }
+    return ss.str();
+}
+
 AnalyzerResult::AnalyzerResult(CaptureGameState cgs,
                                unique_ptr<PlayerAnalyzerResult> p1,
                                unique_ptr<PlayerAnalyzerResult> p2) :

@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <iostream>
 
 #include "base/base.h"
 #include "capture/analyzer.h"
@@ -29,8 +30,8 @@ public:
 
     virtual std::unique_ptr<AnalyzerResult> analyzerResult() const override;
 
-private:
-    void runLoop();
+protected:
+    virtual void runLoop();
 
     Source* source_;
     Analyzer* analyzer_;

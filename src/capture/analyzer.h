@@ -100,6 +100,7 @@ struct PlayerAnalyzerResult {
     void resetCurrentPuyoState(bool state);
 
     std::string toString() const;
+    std::string toLine() const;
 
 public:
     // TODO(mayah): Make these private.
