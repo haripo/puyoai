@@ -57,6 +57,7 @@ add_subdirectory(tzik)
 add_subdirectory(yamaguchi)
 add_subdirectory(yuricat)
 add_subdirectory(inosendo)
+add_subdirectory(haripo)
 
 add_subdirectory(sample)
 add_subdirectory(sample_beam)
