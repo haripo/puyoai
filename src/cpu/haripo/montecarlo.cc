@@ -65,7 +65,6 @@ Problem makeProblem()
     return problem;
 }
 
-// TODO(mayah): Implement with GUI!
 int main(int argc, char* argv[])
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
@@ -90,31 +89,64 @@ int main(int argc, char* argv[])
 
     ai.mutableMyPlayerState()->field = problem.myState.field;
     ai.mutableMyPlayerState()->seq = problem.enemyState.seq;
-    ai.mutableEnemyPlayerState()->field = problem.enemyState.field;
-    ai.mutableEnemyPlayerState()->seq = problem.enemyState.seq;
 
     for (int i = 0; i < 50; ++i) {
-        // frameId 1 will be used for initializing now. Let's avoid it.
-        const int frameId = 2 + i;
-        req.frameId = frameId;
-
         FieldPrettyPrinter::print(
           req.playerFrameRequest[0].field,
           req.playerFrameRequest[0].kumipuyoSeq);
 
-        ThoughtResult thoughtResult = ai.thinkPlan(frameId,
-                                                   CoreField(req.playerFrameRequest[0].field),
-                                                   req.playerFrameRequest[0].kumipuyoSeq.subsequence(0, 2),
-                                                   ai.myPlayerState(),
-                                                   ai.enemyPlayerState(),
-                                                   PatternThinker::DEFAULT_DEPTH, PatternThinker::DEFAULT_NUM_ITERATION);
+        // playout
+        ThoughtResult playoutResult;
+        for (int k = 0; k < 1; ++k) {
+            ThoughtResult tmpResult;
+            CoreField ff = CoreField(req.playerFrameRequest[0].field);
+            KumipuyoSeq seq = req.playerFrameRequest[0].kumipuyoSeq;
+            RensaResult tmpRensaResult;
+
+            // search in random queues
+            for (int j = 0; j < 50; ++j) {
+                cout << "*";
+                fflush(stdout);
+
+                const int frameId = 2 + i + j;
+                req.frameId = frameId;
+
+                ThoughtResult thoughtResult = ai.thinkPlan(
+                  frameId,
+                  ff,
+                  seq.subsequence(0, 2),
+                  ai.myPlayerState(),
+                  ai.enemyPlayerState(),
+                  PatternThinker::FAST_DEPTH,
+                  PatternThinker::FAST_NUM_ITERATION);
+
+                if (j == 0) {
+                    tmpResult = thoughtResult;
+                }
+
+                {
+                    ff.dropKumipuyo(thoughtResult.plan.decisions().front(), seq.front());
+                    tmpRensaResult = ff.simulate();
+                    //req.playerFrameRequest[0].field = ff.toPlainField();
+                }
+                seq.dropFront();
+            }
+
+            if (true) { // compare tmpRensaResult
+                playoutResult = tmpResult;
+            }
+        }
+        cout << endl;
+
+        // playout 結果を反映
         {
             CoreField f(req.playerFrameRequest[0].field);
-            f.dropKumipuyo(thoughtResult.plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
-            f.simulate();
+            f.dropKumipuyo(playoutResult.plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
+            RensaResult result = f.simulate();
             req.playerFrameRequest[0].field = f.toPlainField();
         }
         req.playerFrameRequest[0].kumipuyoSeq.dropFront();
+
     }
 
     return 0;
