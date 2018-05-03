@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 cpu_setup("haripo")
 
 add_library(haripo_mc_lib
-            PlayoutEvaluator.cc)
+            playout_evaluator.cc)
 
 function(haripo_add_executable exe)
   cpu_add_executable(${exe} ${ARGN})
@@ -16,4 +16,4 @@ endfunction()
 
 # cpu_add_runner(run.sh)
 
-haripo_add_executable(haripo montecarlo.cc)
+haripo_add_executable(haripo_mc montecarlo.cc)

@@ -2,6 +2,7 @@
 #define HARIPO_PLAYOUT_EVALUATOR_H_
 
 #include <iostream>
+#include <utility>
 
 #include "core/core_field.h"
 #include "core/field_pretty_printer.h"
@@ -25,7 +26,8 @@ struct PlayoutResult {
 
 class PlayoutEvaluator {
 public:
-    PlayoutResult evaluate(CoreField field, KumipuyoSeq seq, int frame);
+    std::tuple<RensaResult, PlainField, ThoughtResult> try_once(CoreField field, KumipuyoSeq seq, int hands);
+    PlayoutResult evaluate(CoreField field, KumipuyoSeq seq, int hands);
 };
 
 #endif

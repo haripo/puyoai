@@ -23,7 +23,7 @@
 #include "cpu/mayah/pattern_thinker.h"
 #include "cpu/mayah/mayah_ai.h"
 
-#include "PlayoutEvaluator.h"
+#include "playout_evaluator.h"
 
 DEFINE_string(problem, "", "use problem");
 DEFINE_bool(tokopuyo, false, "Use tokopuyo parameter");
