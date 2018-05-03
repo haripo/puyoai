@@ -1,0 +1,31 @@
+#ifndef HARIPO_PLAYOUT_EVALUATOR_H_
+#define HARIPO_PLAYOUT_EVALUATOR_H_
+
+#include <iostream>
+
+#include "core/core_field.h"
+#include "core/field_pretty_printer.h"
+#include "core/frame_request.h"
+#include "core/kumipuyo.h"
+#include "core/kumipuyo_seq_generator.h"
+
+#include "cpu/mayah/evaluator.h"
+#include "cpu/mayah/pattern_thinker.h"
+#include "cpu/mayah/mayah_ai.h"
+
+class InteractiveAI : public DebuggableMayahAI {
+public:
+    InteractiveAI(int argc, char* argv[]) : DebuggableMayahAI(argc, argv) {}
+};
+
+struct PlayoutResult {
+    std::vector<ThoughtResult> thoughts;
+    std::vector<RensaResult> chains;
+};
+
+class PlayoutEvaluator {
+public:
+    PlayoutResult evaluate(CoreField field, KumipuyoSeq seq, int frame);
+};
+
+#endif
