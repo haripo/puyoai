@@ -94,20 +94,24 @@ int main(int argc, char* argv[])
         FieldPrettyPrinter::print(
           req.playerFrameRequest[0].field,
           req.playerFrameRequest[0].kumipuyoSeq);
+        cout << "*********************" << endl;
 
         // playout
-        ThoughtResult playoutResult;
-        for (int k = 0; k < 1; ++k) {
+        vector<ThoughtResult> playoutResult;
+        vector<RensaResult> playoutRensaResult;
+        for (int k = 0; k < 10; ++k) {
             ThoughtResult tmpResult;
             CoreField ff = CoreField(req.playerFrameRequest[0].field);
-            KumipuyoSeq seq = req.playerFrameRequest[0].kumipuyoSeq;
+
+            // 見えてる 2 手 + ランダム
+            KumipuyoSeq seq = req.playerFrameRequest[0].kumipuyoSeq.subsequence(0, 2);
+            seq.append(KumipuyoSeqGenerator::generateACPuyo2Sequence());
+
             RensaResult tmpRensaResult;
+            PlainField lastFieldState;
 
             // search in random queues
-            for (int j = 0; j < 50; ++j) {
-                cout << "*";
-                fflush(stdout);
-
+            for (int j = 0; j < 50 - i; ++j) {
                 const int frameId = 2 + i + j;
                 req.frameId = frameId;
 
@@ -117,31 +121,59 @@ int main(int argc, char* argv[])
                   seq.subsequence(0, 2),
                   ai.myPlayerState(),
                   ai.enemyPlayerState(),
-                  PatternThinker::FAST_DEPTH,
-                  PatternThinker::FAST_NUM_ITERATION);
+                  PatternThinker::DEFAULT_DEPTH,
+                  PatternThinker::DEFAULT_NUM_ITERATION);
 
                 if (j == 0) {
                     tmpResult = thoughtResult;
                 }
 
                 {
+                    if (thoughtResult.plan.decisions().size() == 0) {
+                        // 連鎖構築に失敗？
+                        continue;
+                    }
                     ff.dropKumipuyo(thoughtResult.plan.decisions().front(), seq.front());
-                    tmpRensaResult = ff.simulate();
+                    PlainField _lastFieldState = ff.toPlainField();
+                    RensaResult lastRensaResult = ff.simulate();
+                    if (j == 0
+                        || lastRensaResult.chains > tmpRensaResult.chains
+                        || (lastRensaResult.chains == tmpRensaResult.chains
+                            && lastRensaResult.score > tmpRensaResult.score)) {
+                        tmpRensaResult = lastRensaResult;
+                        lastFieldState = _lastFieldState;
+                    }
                     //req.playerFrameRequest[0].field = ff.toPlainField();
                 }
                 seq.dropFront();
             }
 
-            if (true) { // compare tmpRensaResult
-                playoutResult = tmpResult;
+            cout << "trial: " << k << endl;
+            FieldPrettyPrinter::print(
+                lastFieldState,
+                seq);
+            cout << tmpRensaResult << endl;
+
+            playoutResult.push_back(tmpResult);
+            playoutRensaResult.push_back(tmpRensaResult);
+        }
+
+        // スコアの中央値の高いものを選択
+        int maxResult = 0;
+        for (int l = 0; l < (int)playoutResult.size(); ++l) {
+            if (playoutRensaResult[l].score > playoutRensaResult[maxResult].score) {
+                maxResult = l;
             }
         }
-        cout << endl;
+
+        cout << playoutRensaResult[maxResult] << endl;
 
         // playout 結果を反映
         {
+            ThoughtResult r = playoutResult[maxResult];
             CoreField f(req.playerFrameRequest[0].field);
-            f.dropKumipuyo(playoutResult.plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
+            cout << "playoutResult" << r.plan.decisions().size() << endl;
+            f.dropKumipuyo(r.plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
             RensaResult result = f.simulate();
             req.playerFrameRequest[0].field = f.toPlainField();
         }
