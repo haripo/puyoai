@@ -20,14 +20,21 @@ public:
 };
 
 struct PlayoutResult {
+    int score;
     std::vector<ThoughtResult> thoughts;
     std::vector<RensaResult> chains;
 };
 
 class PlayoutEvaluator {
 public:
+    PlayoutEvaluator();
+    ~PlayoutEvaluator();
+
     std::tuple<RensaResult, PlainField, ThoughtResult> try_once(CoreField field, KumipuyoSeq seq, int hands);
     PlayoutResult evaluate(CoreField field, KumipuyoSeq seq, int hands);
+
+private:
+    InteractiveAI *ai;
 };
 
 #endif

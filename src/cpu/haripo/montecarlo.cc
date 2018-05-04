@@ -84,26 +84,39 @@ int main(int argc, char* argv[])
 
         cout << "*********************" << endl;
 
-        CoreField ff = CoreField(req.playerFrameRequest[0].field);
+        std::vector<Plan> plans;
+        std::vector<PlayoutResult> playoutResults;
+
+        auto callback = [&](const RefPlan& plan) {
+            KumipuyoSeq seq = req.playerFrameRequest[0].kumipuyoSeq.subsequence(1, 3);
+            PlayoutResult playoutResult = playout.evaluate(plan.field(), seq, 50 - i);
+
+            // TODO: 50-i のように固定値を指定するのではなく、本線発火タイミングを検知する
+
+            plans.push_back(plan.toPlan());
+            playoutResults.push_back(playoutResult);
+
+            cout << "score: " << playoutResult.score << endl;
+            FieldPrettyPrinter::print(plan.field().toPlainField(), seq);
+        };
+
+        CoreField field = CoreField(req.playerFrameRequest[0].field);
         KumipuyoSeq seq = req.playerFrameRequest[0].kumipuyoSeq.subsequence(0, 2);
-        PlayoutResult playoutResult = playout.evaluate(ff, seq, 50); // frames
+        Plan::iterateAvailablePlans(field, seq, 1, callback);
 
         // スコアの中央値の高いものを選択
         int maxResult = 0;
-        for (int l = 0; l < (int)playoutResult.thoughts.size(); ++l) {
-            if (playoutResult.chains[l].score > playoutResult.chains[maxResult].score) {
-                maxResult = l;
+        for (int j = 0; j < (int)playoutResults.size(); ++j) {
+            if (playoutResults[j].score > playoutResults[maxResult].score) {
+                maxResult = j;
             }
         }
 
-        cout << playoutResult.chains[maxResult] << endl;
-
         // playout 結果を反映
         {
-            ThoughtResult r = playoutResult.thoughts[maxResult];
+            Plan plan = plans[maxResult];
             CoreField f(req.playerFrameRequest[0].field);
-            cout << "playoutResult" << r.plan.decisions().size() << endl;
-            f.dropKumipuyo(r.plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
+            f.dropKumipuyo(plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
             RensaResult result = f.simulate();
             req.playerFrameRequest[0].field = f.toPlainField();
         }
