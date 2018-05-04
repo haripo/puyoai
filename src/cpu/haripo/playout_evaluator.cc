@@ -71,7 +71,7 @@ PlayoutResult PlayoutEvaluator::evaluate(
     std::vector<ThoughtResult> thoughts;
     std::vector<RensaResult> chains;
 
-    for (int k = 0; k < 15; ++k) {
+    for (int k = 0; k < 30; ++k) {
         std::tuple<RensaResult, PlainField, ThoughtResult> result = try_once(field, seq, hands);
         RensaResult rensaResult = std::get<0>(result);
         PlainField fieldResult = std::get<1>(result);
