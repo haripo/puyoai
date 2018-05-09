@@ -59,7 +59,6 @@ public:
         const PlayerState& me, const PlayerState& enemy,
         const MidEvalResult&, bool fast, bool usesRensaHandTree, const GazeResult& gazeResult) const;
 
-private:
     MidEvalResult midEval(const RefPlan&, const CoreField& currentField,
                           const KumipuyoSeq& restSeq,
                           int currentFrameId, int maxIteration,

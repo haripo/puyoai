@@ -33,8 +33,13 @@ public:
     std::tuple<RensaResult, PlainField, ThoughtResult> try_once(CoreField field, KumipuyoSeq seq, int hands);
     PlayoutResult evaluate(CoreField field, KumipuyoSeq seq, int hands);
 
-private:
+//private:
     InteractiveAI *ai;
+};
+
+class MyThinker : public PatternThinker {
+public:
+    using PatternThinker::eval;
 };
 
 #endif

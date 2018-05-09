@@ -1,4 +1,5 @@
 #include "mayah_ai.h"
+#include "yukina_ai.h"
 
 #include <algorithm>
 #include <fstream>
@@ -129,8 +130,8 @@ private:
 
 void runOnce(const EvaluationParameterMap& paramMap)
 {
-    auto ai = new DebuggableMayahAI;
-    ai->setUsesRensaHandTree(false);
+    auto ai = new DebuggableYukinaAI;
+    //ai->setUsesRensaHandTree(false);
     ai->setEvaluationParameterMap(paramMap);
 
     std::unique_ptr<AI> ai_ptr(ai);
@@ -148,6 +149,17 @@ void runOnce(const EvaluationParameterMap& paramMap)
     cout << endl;
 }
 
+inline const char* toString(EndlessResult::Type v)
+{
+    switch (v)
+    {
+        case EndlessResult::Type::DEAD:   return "dead";
+        case EndlessResult::Type::MAIN_CHAIN:   return "mainchain";
+        case EndlessResult::Type::ZENKESHI: return "allclear";
+        case EndlessResult::Type::PUYOSEQ_RUNOUT: return "runout";
+    }
+}
+
 RunResult run(Executor* executor, const EvaluationParameterMap& paramMap)
 {
     const int N = FLAGS_size;
@@ -155,8 +167,8 @@ RunResult run(Executor* executor, const EvaluationParameterMap& paramMap)
 
     for (int i = 0; i < N; ++i) {
         auto f = [i, &paramMap, &ps]() {
-            auto ai = new DebuggableMayahAI;
-            ai->setUsesRensaHandTree(false);
+            auto ai = new DebuggableYukinaAI;
+            //ai->setUsesRensaHandTree(false);
             ai->setEvaluationParameterMap(paramMap);
 
             std::unique_ptr<AI> ai_ptr(ai);
@@ -165,11 +177,33 @@ RunResult run(Executor* executor, const EvaluationParameterMap& paramMap)
             stringstream ss;
             KumipuyoSeq seq = KumipuyoSeqGenerator::generateACPuyo2SequenceWithSeed(i + FLAGS_offset);
             EndlessResult result = endless.run(seq);
-            ss << "case " << setw(2) << i << ": "
-               << "score=" << setw(6) << result.score << " rensa=" << setw(2) << result.maxRensa;
-            if (result.zenkeshi)
-                ss << " / ZENKESHI";
-            ss << endl;
+            string history = "";
+
+            for(auto it = result.decisions.begin(); it != result.decisions.end(); ++it) {
+                history += std::to_string(it->axisX()) + std::string("") + std::to_string(it->childX()) + std::string("-");
+            }
+
+            ss << "case, "
+                << setw(2) << i << ", "
+                << setw(6) << result.score << ", "
+                << setw(2) << result.maxRensa << ", "
+                << setw(8) << toString(result.type) << ", "
+                << seq.toString() << ", "
+                << history << ", "
+                << makePuyopURL(seq, result.decisions) << endl;
+
+            int j = 0;
+            CoreField ff;
+            for(auto it = result.decisions.begin(); it != result.decisions.end(); ++it) {
+                ff.dropKumipuyo(*it, seq.get(j));
+                ff.simulate();
+                ss << "field, "
+                    << setw(2) << i << ", "
+                    << setw(2) << j++ << ", "
+                    << it->axisX() << ", "
+                    << it->childX() << ", "
+                    << ff.toPlainField().toString() << endl;
+            }
 
             ps[i].set_value(Result{result, ss.str()});
         };

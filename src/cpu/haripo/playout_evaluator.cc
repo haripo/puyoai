@@ -95,3 +95,20 @@ PlayoutResult PlayoutEvaluator::evaluate(
 
     return PlayoutResult { score, thoughts, chains };
 }
+//
+// // from mayah
+// EvalResult PatternThinker::eval(const RefPlan& plan,
+//                                 const KumipuyoSeq& restSeq,
+//                                 int currentFrameId, int maxIteration,
+//                                 const PlayerState& me, const PlayerState& enemy,
+//                                 const MidEvalResult& midEvalResult,
+//                                 bool fast, bool usesRensaHandTree,
+//                                 const GazeResult& gazeResult) const
+// {
+//     SimpleScoreCollector sc(evaluationParameterMap_);
+//     Evaluator<SimpleScoreCollector> evaluator(patternBook_, &sc);
+//     evaluator.eval(plan, restSeq, currentFrameId, maxIteration, me, enemy, midEvalResult, fast, usesRensaHandTree, gazeResult);
+//
+//     const CollectedSimpleScore& simpleScore = sc.collectedScore();
+//     return EvalResult(simpleScore.score(sc.collectedCoef()), sc.estimatedRensaScore());
+// }

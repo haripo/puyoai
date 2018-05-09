@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <tuple>
+#include <memory>
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -62,6 +63,22 @@ Problem makeProblem()
     return problem;
 }
 
+
+struct MonteCarloTreeNode {
+    std::vector<std::shared_ptr<MonteCarloTreeNode>> children;
+    int score;
+    int value;
+    int count;
+    CoreField field;
+
+    MonteCarloTreeNode() {
+        count = 0;
+        score = 0;
+        value = 0;
+    }
+};
+
+
 int main(int argc, char* argv[])
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
@@ -77,7 +94,10 @@ int main(int argc, char* argv[])
     req.playerFrameRequest[0].field = problem.myState.field.toPlainField();
     req.playerFrameRequest[0].kumipuyoSeq = problem.myState.seq;
 
+    std::shared_ptr<MonteCarloTreeNode> tree(new MonteCarloTreeNode());
+
     for (int i = 0; i < 50; ++i) {
+        cout << "FINAL" << endl;
         FieldPrettyPrinter::print(
           req.playerFrameRequest[0].field,
           req.playerFrameRequest[0].kumipuyoSeq);
@@ -85,19 +105,52 @@ int main(int argc, char* argv[])
         cout << "*********************" << endl;
 
         std::vector<Plan> plans;
-        std::vector<PlayoutResult> playoutResults;
+        //std::vector<PlayoutResult> playoutResults;
+        std::vector<int> playoutResults;
+
+        std::shared_ptr<MonteCarloTreeNode> currentNode = tree;
 
         auto callback = [&](const RefPlan& plan) {
             KumipuyoSeq seq = req.playerFrameRequest[0].kumipuyoSeq.subsequence(1, 3);
-            PlayoutResult playoutResult = playout.evaluate(plan.field(), seq, 50 - i);
+            //PlayoutResult playoutResult = playout.evaluate(plan.field(), seq, 50 - i);
 
-            // TODO: 50-i のように固定値を指定するのではなく、本線発火タイミングを検知する
+            MidEvalResult midEvalResult;
+            GazeResult gazeResult;
+            PlayerState playerState;
+
+            EvalResult evalResult = playout.ai->pattern_thinker_->eval(
+                plan,
+                seq,
+                3 + i, //int currentFrameId,
+                4, // int maxIteration,
+                playerState, // const PlayerState& me, お邪魔量、現在のスコアなど
+                playerState, // const PlayerState& enemy,
+                midEvalResult, // const MidEvalResult& midEvalResult,
+                false, //bool fast,
+                false, //bool usesRensaHandTree,
+                gazeResult //const GazeResult& gazeResult
+            );
 
             plans.push_back(plan.toPlan());
-            playoutResults.push_back(playoutResult);
 
-            cout << "score: " << playoutResult.score << endl;
-            FieldPrettyPrinter::print(plan.field().toPlainField(), seq);
+            if (plan.score() > evalResult.maxVirtualScore() && plan.score() > 70000) {
+                playoutResults.push_back(evalResult.score() * 100);
+            } else {
+                playoutResults.push_back(evalResult.score());
+            }
+
+            //playoutResults.push_back(plan.score());
+            //playoutResults.push_back(playoutResult);
+
+            std::shared_ptr<MonteCarloTreeNode> newNode(new MonteCarloTreeNode());
+            newNode->value = evalResult.score();
+            newNode->score = plan.score();
+            newNode->count += 1;
+            currentNode->children.push_back(newNode);
+
+            //cout << "TRIAL score: " << evalResult.score() << endl;
+            cout << "TRIAL score: " << plan.score() << ", virtual: " << evalResult.maxVirtualScore() << endl;
+            //FieldPrettyPrinter::print(plan.field().toPlainField(), seq);
         };
 
         CoreField field = CoreField(req.playerFrameRequest[0].field);
@@ -107,10 +160,12 @@ int main(int argc, char* argv[])
         // スコアの中央値の高いものを選択
         int maxResult = 0;
         for (int j = 0; j < (int)playoutResults.size(); ++j) {
-            if (playoutResults[j].score > playoutResults[maxResult].score) {
+            if (playoutResults[j] > playoutResults[maxResult]) {
                 maxResult = j;
             }
         }
+
+        currentNode = currentNode->children.at(maxResult);
 
         // playout 結果を反映
         {
@@ -118,6 +173,7 @@ int main(int argc, char* argv[])
             CoreField f(req.playerFrameRequest[0].field);
             f.dropKumipuyo(plan.decisions().front(), req.playerFrameRequest[0].kumipuyoSeq.front());
             RensaResult result = f.simulate();
+            cout << result << ", " << plan.score() << endl;
             req.playerFrameRequest[0].field = f.toPlainField();
         }
         req.playerFrameRequest[0].kumipuyoSeq.dropFront();

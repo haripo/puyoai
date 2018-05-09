@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <functional>
 
 #include "core/game_result.h"
 

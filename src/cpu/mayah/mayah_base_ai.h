@@ -25,7 +25,6 @@ public:
     void onGameWillBegin(const FrameRequest&) override;
     void gaze(int frameId, const CoreField& enemyField, const KumipuyoSeq&) override;
 
-protected:
     bool loadEvaluationParameter();
     bool saveEvaluationParameter() const;
 

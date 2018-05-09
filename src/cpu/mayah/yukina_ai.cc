@@ -9,11 +9,6 @@ using namespace std;
 YukinaAI::YukinaAI(int argc, char* argv[]) :
     MayahBaseAI(argc, argv, "yukina", Executor::makeDefaultExecutor())
 {
-    if (!FLAGS_from_wrapper) {
-        LOG(ERROR) << "mayah was not run with run.sh?" << endl
-                   << "Use run.sh instead of using mayah_cpu directly.";
-    }
-
     setBehaviorRethinkAfterOpponentRensa(true);
 }
 
@@ -21,7 +16,7 @@ DropDecision YukinaAI::think(int frame_id, const CoreField& field, const Kumipuy
                              const PlayerState& me, const PlayerState& enemy, bool fast) const
 {
     const GazeResult& gazeResult = gazer_.gazeResult();
-
+#if 0
     // tsubushi
     if (!enemy.isRensaOngoing()) {
         int len = std::min(kumipuyo_seq.size(), 2);
@@ -90,6 +85,7 @@ DropDecision YukinaAI::think(int frame_id, const CoreField& field, const Kumipuy
             }
    }
 #endif
+#endif
 
     double beginTimeSec = currentTime();
     DropDecision dd = thinkByThinker(frame_id, field, kumipuyo_seq, me, enemy, fast);
@@ -119,7 +115,8 @@ DropDecision YukinaAI::thinkByThinker(int frame_id, const CoreField& field, cons
 #endif
 
     const bool usesDecisionBook = true;
-    const bool usesRensaHandTree = !fast;
+    const bool usesRensaHandTree = false;
+    fast = false;
 
     if (fast) {
         return pattern_thinker_->think(frame_id, field, kumipuyo_seq, me, enemy, gazer_.gazeResult(), fast,
@@ -142,19 +139,22 @@ DropDecision YukinaAI::thinkByThinker(int frame_id, const CoreField& field, cons
     }
 
     // Turning the table mode
+#if 0
     if (field.countColor(PuyoColor::OJAMA) >= 16) {
         return rush_thinker_->think(frame_id, field, kumipuyo_seq, me, enemy, fast);
     }
     if (enemy.field.countColor(PuyoColor::OJAMA) >= 30) {
         return rush_thinker_->think(frame_id, field, kumipuyo_seq, me, enemy, fast);
     }
+#endif
     {
-        int my_field_puyo = field.countPuyos();
-        int enemy_field_puyo = enemy.field.countPuyos();
-        int diff = my_field_puyo - enemy_field_puyo;
-        if (diff >= 24 || diff <= -24) {
-            return rush_thinker_->think(frame_id, field, kumipuyo_seq, me, enemy, fast);
-        }
+        // int my_field_puyo = field.countPuyos();
+        // int enemy_field_puyo = enemy.field.countPuyos();
+        // int diff = my_field_puyo - enemy_field_puyo;
+        // if (diff >= 24 || diff <= -24) {
+        //     cout << 6 << endl;
+        //     return rush_thinker_->think(frame_id, field, kumipuyo_seq, me, enemy, fast);
+        // }
     }
 
     if (field.countPuyos() <= 24) {
