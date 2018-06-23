@@ -180,7 +180,7 @@ RunResult run(Executor* executor, const EvaluationParameterMap& paramMap)
             string history = "";
 
             for(auto it = result.decisions.begin(); it != result.decisions.end(); ++it) {
-                history += std::to_string(it->axisX()) + std::string("") + std::to_string(it->childX()) + std::string("-");
+                history += std::to_string(it->axisX()) + std::string("") + std::to_string(it->rot()) + std::string("-");
             }
 
             ss << "case, "
@@ -195,14 +195,14 @@ RunResult run(Executor* executor, const EvaluationParameterMap& paramMap)
             int j = 0;
             CoreField ff;
             for(auto it = result.decisions.begin(); it != result.decisions.end(); ++it) {
-                ff.dropKumipuyo(*it, seq.get(j));
-                ff.simulate();
                 ss << "field, "
                     << setw(2) << i << ", "
                     << setw(2) << j++ << ", "
                     << it->axisX() << ", "
-                    << it->childX() << ", "
-                    << ff.toPlainField().toString() << endl;
+                    << it->rot() << ", "
+                    << ff.toPlainField().toString('_') << endl;
+                ff.dropKumipuyo(*it, seq.get(j));
+                ff.simulate();
             }
 
             ps[i].set_value(Result{result, ss.str()});
