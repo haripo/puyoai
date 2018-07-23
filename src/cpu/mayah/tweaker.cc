@@ -226,7 +226,7 @@ RunResult run(Executor* executor, const EvaluationParameterMap& paramMap)
     vector<pair<int, int>> scores;
     for (int i = 0; i < N; ++i) {
         Result r = ps[i].get_future().get();
-        cout << r.msg;
+        cout << r.msg << flush;
         if (r.result.zenkeshi && r.result.hand < 8) {
             numZenkeshi++;
             continue;
