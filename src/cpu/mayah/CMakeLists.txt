@@ -66,6 +66,8 @@ mayah_add_executable(experimental experimental.cc)
 
 mayah_add_executable(gazer_example gazer_example.cc)
 
+mayah_add_executable(data_generator data_generator.cc)
+
 if(USE_LIBCURL)
     mayah_add_executable(neural neural_main.cc)
     mayah_add_executable(make_train_data make_train_data.cc)

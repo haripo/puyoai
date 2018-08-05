@@ -100,9 +100,6 @@ else()
 
     add_compile_options("-Wall")
     add_compile_options("-Wextra")
-    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-        add_compile_options("-Werror")
-    endif()
 
     # Always include build/build_config.h
     add_compile_options("-include" "${CMAKE_SOURCE_DIR}/build/build_config.h")
